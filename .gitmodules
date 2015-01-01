@@ -1,0 +1,3 @@
+[submodule "ROPgadget"]
+	path = ROPgadget
+	url = https://github.com/JonathanSalwan/ROPgadget
