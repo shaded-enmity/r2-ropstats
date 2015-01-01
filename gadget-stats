@@ -1,0 +1,90 @@
+#!/usr/bin/python
+# vim: set fileencoding=utf-8 :
+
+import sys
+import subprocess
+import argparse
+from r2.r_core import RCore
+
+parser = argparse.ArgumentParser()
+parser.add_argument('file_path')
+parser.add_argument('--gadget-file', help='skip the gadget search and use the provided data.')
+args = parser.parse_args()
+
+fpath, gpath = args.file_path, args.gadget_file
+
+def san(x, s=''):
+	return x.replace('\n', s).replace('\r', s)
+
+def pptr(x):
+	return '0x%08x' % int(x, 16)
+
+
+gfind = 'ROPgadget/ROPgadget.py'
+
+core = RCore()
+
+print u"[-] Opening file:	\"%s\" " % fpath
+
+core.file_open(fpath, 0, 0)
+core.bin_load ("", 0)
+
+print u"   ✓ Analyzing ... "
+print u'   ➙ ' + u'-'*70
+core.anal_all()
+
+print (u"   ➙ Entrypoint:	%s" % (pptr(core.num.get ("entry0"))))
+
+if gpath:
+	p = open(gpath)
+else:
+	p = subprocess.Popen('%s --binary %s' % (gfind, fpath), shell=True, 
+          stdout=subprocess.PIPE, close_fds=True).stdout
+
+gadgets= [san(s) for s in p.readlines()[2:-2]]
+
+print u'   ➙ Gadgets: 		%i' % len(gadgets)
+print u'   ➙ ' + u'-'*70
+
+
+ic, ec, pd = 0, 0, None
+
+for g in gadgets:
+	addr = g.split(' ')[0]
+	raddr=san(core.cmd_str("s %s; s" % addr))
+	flags=san(core.cmd_str("ai"), ' ')
+	
+	# print "RADDR: %s [ADDR: %s] = ( %s)" % (pptr(raddr), addr, flags)
+	if flags.count('func') != 0:
+		pd='pdb'
+	elif flags.count('exec') != 0:
+		'''
+		While this heuristics may produce false
+		positives, 32 bytes is usually enough
+		to let the instruction stream to 'heal'
+		itself thanks to the 16-byte block
+		alignment nop-sleds.
+		'''
+		pd='pd 20@-32'
+	else:
+		continue # section is not executable
+
+	explicit = san(core.cmd_str('%s~?%s' % (pd, pptr(raddr)))) == '1'
+
+	'''
+	In case the analysis of the func failed the addr will still
+	bear the 'func' flag but neither pdb/pdf will work so we fallback
+	to heuristics
+	'''
+
+	func_error = san(core.cmd_str('??')) == '2'
+	if func_error:
+		explicit = san(core.cmd_str('pd 20@-32~?%s' % pptr(raddr))) == '1'
+
+	if explicit:
+		ec += 1
+		#print 'Explicit gadget: ', san(g)
+	else:
+		ic +=1
+
+print u'   ➙ Implicit:		%i\n   ➙ Explicit:		%i\n   ➙ Total: 		%i\n   » Ratio: 		%.2f:1' % (ic, ec, ec+ic, float(ic)/float(ec))
