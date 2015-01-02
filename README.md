@@ -13,6 +13,10 @@ Python 2.7
 
 Before you build `radare2` make sure to apply the patch `cmd_print.patch`. It contains workaround for a bug in the function analysis code that marks the memory region as a function (thus having basic blocks), but if the analysis fails (one example being 'function too big error') then the information is not provided and the memory region is in a bogus state (see (source code here)[https://github.com/shaded-enmity/r2-ropstats/blob/master/gadget-stats#L80] for more information).
 
+## Implicit/Explicit gadgets
+
+Implicit gadgets are for example function epilogues + their vicinity and are formed only by instructions also present in a healthy running program. Explicit gadgets are formed by transfering control amidst another instructions in such a way to form a valid gadgets.
+
 ## Overview
 
 `gadget-stats [--gadget-file file] file` - Analyzes the provided binary and searches its executable sections for ROP gadgets, then computes statistics about the gadgets and the ratio of implicit/explicit ones. If the optional argument `--gadget-file` is supplied then that file is used as source of gadgets, the expected format is that of `ROPgadget`'s output.
