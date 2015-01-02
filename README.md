@@ -22,7 +22,7 @@ c0da206026cffea80b6effe2be03a68e573eb1b090a72dfdeaa4f6a958a929e9  /lib64/libc-2.
 ```
 
 ```bash
-./gadget-stats /lib64/libc-2.18.so
+./gadget-stats /lib64/libc-2.18.so 2>/dev/null
 
 [-] Opening file:       "/lib64/libc-2.18.so"
    ✓ Analyzing ...
@@ -40,5 +40,5 @@ In second example the binary is first sifted through with `ROPgadget` piping the
 
 ```bash
 python ROPgadget.py --binary /lib64/libc-2.18.so > libc-gadgets
-./gadget-stats --gadget-file libc-gadgets /lib64/libc-2.18.so
+./gadget-stats --gadget-file libc-gadgets /lib64/libc-2.18.so 2>/dev/null
 ```
