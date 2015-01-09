@@ -33,7 +33,7 @@ print u"   ✓ Analyzing ... "
 print u'   ➙ ' + u'-'*70
 core.anal_all()
 
-print (u"   ➙ Entrypoint:	%s" % (pptr(core.num.get ("entry0"))))
+print (u"   ➙ Entrypoint:       0x%x" % (core.num.get ("entry0")))
 
 if gpath:
 	p = open(gpath)
