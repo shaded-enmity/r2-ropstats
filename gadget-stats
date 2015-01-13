@@ -77,7 +77,7 @@ for g in gadgets:
 	to heuristics
 	'''
 
-	func_error = san(core.cmd_str('??')) == '2'
+	func_error = san(core.cmd_str('??')) == '-1'
 	if func_error:
 		explicit = san(core.cmd_str('pd 20@-32~?%s' % pptr(raddr))) == '1'
 
