@@ -7,7 +7,7 @@ A set of tools based on radare2 for analysis of ROP gadgets and payloads.
 
 Python 2.7
 
-[radare2](https://github.com/radare/radare2) + [python bindings](https://github.com/radare/radare2-bindings)
+[radare2](https://github.com/radare/radare2) + [r2pipe python bindings](https://github.com/radare/radare2-bindings)
 
 ## Implicit/Explicit gadgets
 

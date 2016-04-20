@@ -4,7 +4,7 @@
 import sys
 import subprocess
 import argparse
-from r2.r_core import RCore
+import r2pipe
 
 parser = argparse.ArgumentParser()
 parser.add_argument('file_path')
@@ -22,18 +22,18 @@ def pptr(x):
 
 gfind = 'ROPgadget/ROPgadget.py'
 
-core = RCore()
-
 print u"[-] Opening file:	\"%s\" " % fpath
 
-core.file_open(fpath, 0, 0)
-core.bin_load ("", 0)
+
+core = r2pipe.open(fpath)
 
 print u"   ✓ Analyzing ... "
 print u'   ➙ ' + u'-'*70
-core.anal_all()
+core.cmd('aaaa')
 
-print (u"   ➙ Entrypoint:       0x%x" % (core.num.get ("entry0")))
+skip = '[Entrypoints]\nvaddr='
+ep = core.cmd('ie')
+print(u"   ➙ Entrypoint:       %s" % (ep[len(skip):ep.find(' ')]))
 
 if gpath:
 	p = open(gpath)
@@ -51,8 +51,8 @@ ic, ec, pd = 0, 0, None
 
 for g in gadgets:
 	addr = g.split(' ')[0]
-	raddr=san(core.cmd_str("s %s; s" % addr))
-	flags=san(core.cmd_str("ai"), ' ')
+	raddr=san(core.cmd("s %s; s" % addr))
+	flags=san(core.cmd("ai"), ' ')
 	
 	# print "RADDR: %s [ADDR: %s] = ( %s)" % (pptr(raddr), addr, flags)
 	if flags.count('func') != 0:
@@ -69,7 +69,7 @@ for g in gadgets:
 	else:
 		continue # section is not executable
 
-	explicit = san(core.cmd_str('%s~?%s' % (pd, pptr(raddr)))) == '1'
+	explicit = san(core.cmd('%s~?%s' % (pd, pptr(raddr)))) == '1'
 
 	'''
 	In case the analysis of the func failed the addr will still
@@ -77,9 +77,9 @@ for g in gadgets:
 	to heuristics
 	'''
 
-	func_error = san(core.cmd_str('??')) == '-1'
+	func_error = san(core.cmd('??')) == '-1'
 	if func_error:
-		explicit = san(core.cmd_str('pd 20@-32~?%s' % pptr(raddr))) == '1'
+		explicit = san(core.cmd('pd 20@-32~?%s' % pptr(raddr))) == '1'
 
 	if explicit:
 		ec += 1
